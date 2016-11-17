@@ -1,6 +1,6 @@
 <?php
 
-namespace RIR;
+namespace Villeristi;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 

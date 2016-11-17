@@ -2,6 +2,6 @@
 
 require_once __DIR__ . '/../src/Resizer.php';
 
-use RIR\Resizer;
+use Villeristi\Resizer;
 
 Resizer::serve();
