@@ -4,7 +4,6 @@ namespace RIR;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Exception;
 use Eventviva\ImageResize as Image;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -14,26 +13,37 @@ class Resizer {
 	 * @var Request
 	 */
 	private $request;
+
 	/**
 	 * @var Image
 	 */
 	private $image;
+
+	/**
+	 * @var String
+	 */
+	private $imageSrc;
+
 	/**
 	 * @var array
 	 */
 	private $config;
+
 	/**
 	 * @var int
 	 */
 	private $width;
+
 	/**
 	 * @var int
 	 */
 	private $height;
+
 	/**
 	 * @var string
 	 */
 	private $method;
+
 	/**
 	 * @var array
 	 */
@@ -43,11 +53,16 @@ class Resizer {
 		$this->request = Request::createFromGlobals();
 		$this
 			->configure()
-			->guardHotlinking();
-		$this->image = new Image( $this->request->query->get( 'src' ) );
-		$this
+			->setImageSrc( $this->request->query->get( 'src' ) )
+			->guardHotlinking()
 			->parseRequest()
 			->assignMethod();
+
+		if ( @getimagesize( $this->getImageSrc() ) ) {
+			$this->image = new Image( $this->getImageSrc() );
+		} else {
+			$this->image = new Image( $this->getConfig( 'notFoundImage' ) );
+		}
 	}
 
 	/**
@@ -118,11 +133,10 @@ class Resizer {
 
 	/**
 	 * @return $this
-	 * @throws Exception
 	 */
 	protected function guardHotlinking() {
 		if ( ! $this->isHostAllowed() ) {
-			throw new Exception( 'Host not allowed!' );
+			$this->setImageSrc( $this->getConfig( 'notAllowedImage' ) );
 		}
 
 		return $this;
@@ -214,5 +228,23 @@ class Resizer {
 	 */
 	public function setArgs( array $args ) {
 		$this->args = $args;
+	}
+
+	/**
+	 * @return String
+	 */
+	public function getImageSrc() {
+		return $this->imageSrc;
+	}
+
+	/**
+	 * @param String $imageSrc
+	 *
+	 * @return $this
+	 */
+	public function setImageSrc( $imageSrc ) {
+		$this->imageSrc = $imageSrc;
+
+		return $this;
 	}
 }
